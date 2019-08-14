@@ -34,8 +34,7 @@ class Album
 
   def Album.all
     db = PG.connect({dbname: 'music_collection', host: 'localhost'})
-    sql = "
-      SELECT * FROM albums"
+    sql = "SELECT * FROM albums"
     db.prepare("all", sql)
     result = db.exec_prepared("all")
     db.close()
