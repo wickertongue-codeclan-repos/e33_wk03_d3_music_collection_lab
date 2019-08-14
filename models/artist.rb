@@ -13,6 +13,25 @@ class Artist
     @name = options['name']
   end
 
+  def Artist.all
+    sql = "SELECT * FROM artists"
+    result = SqlRunner.run(sql)
+    artist = result.map { |artist_hash| Artist.new(artist_hash) }
+    return artist
+  end
+
+  def Artist.delete_all
+    sql = "DELETE FROM artists"
+    SqlRunner.run(sql)
+  end
+
+  def Album.all
+    sql = "SELECT * FROM albums"
+    result = SqlRunner.run(sql)
+    album = result.map { |album_hash| Album.new(album_hash) }
+    return album
+  end
+
   def save
     sql = "
     INSERT INTO artists
@@ -25,18 +44,6 @@ class Artist
     values = [@name]
     result = SqlRunner.run(sql, values)
     @id = result[0]["id"].to_i
-  end
-
-  def Artist.all
-    sql = "SELECT * FROM artists"
-    result = SqlRunner.run(sql)
-    artist = result.map { |artist_hash| Artist.new(artist_hash) }
-    return artist
-  end
-
-  def Artist.delete_all
-    sql = "DELETE FROM artists"
-    SqlRunner.run(sql)
   end
 
   def albums
@@ -57,16 +64,6 @@ class Artist
     sql = "UPDATE artists SET name = $1 WHERE id = $2"
     values = [@name, @id]
     SqlRunner.run(sql, values)
-  end
-
-  def Artist.find_by_id(id)
-    sql = "SELECT * FROM artists WHERE id = $1"
-    values = [id]
-    result = SqlRunner.run(sql, values)
-    return nil if result.first() == nil
-    artist_hash = result[0]
-    found_artist = Artist.new(artist_hash)
-    return found_artist
   end
 
 

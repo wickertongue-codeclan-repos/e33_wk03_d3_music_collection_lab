@@ -12,6 +12,28 @@ class Album
     @genre = options['genre']
   end
 
+  def Album.delete_all
+    sql = "DELETE FROM albums"
+    SqlRunner.run(sql)
+  end
+
+  def Album.find_by_id(id)
+    sql = "SELECT * FROM albums WHERE id = $1"
+    values = [id]
+    result = SqlRunner.run(sql, values)
+    return nil if result.first() == nil
+    album_hash = result[0]
+    found_album = Artist.new(album_hash)
+    return found_album
+  end
+
+  def Album.all
+    sql = "SELECT * FROM albums"
+    result = SqlRunner.run(sql)
+    album = result.map { |album_hash| Album.new(album_hash) }
+    return album
+  end
+
   def save
     sql = "
       INSERT INTO albums
@@ -26,13 +48,6 @@ class Album
     values = [@artist_id, @title, @genre]
     result = SqlRunner.run(sql, values)
     @id = result[0]["id"].to_i
-  end
-
-  def Album.all
-    sql = "SELECT * FROM albums"
-    result = SqlRunner.run(sql)
-    album = result.map { |album_hash| Album.new(album_hash) }
-    return album
   end
 
   def artist
@@ -61,11 +76,6 @@ class Album
       WHERE id = $4"
     values = [@artist_id, @title, @genre, @id]
     SqlRunner.run(sql, values)
-  end
-
-  def Album.delete_all
-    sql = "DELETE FROM albums"
-    SqlRunner.run(sql)
   end
 
 end
