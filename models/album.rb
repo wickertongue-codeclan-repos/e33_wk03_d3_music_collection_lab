@@ -1,56 +1,71 @@
-require('pry')
-require('pg')
-
 require_relative('./artist')
 
 class Album
 
-  attr_accessor :id, :title
+  attr_accessor :title, :genre
+  attr_reader :id, :artist_id
 
   def initialize(options)
+    @artist_id = options['artist_id'].to_i
     @id = options['id'].to_i if options['id']
     @title = options['title']
     @genre = options['genre']
-    @artist_id = options['artist_id'].to_i
   end
 
   def save
-    db = PG.connect({dbname: 'music_collection', host: 'localhost'})
     sql = "
       INSERT INTO albums
       (
+        artist_id,
         title,
-        genre,
-        artist_id
+        genre
         )
       VALUES
       ($1, $2, $3)
-      RETURNING * "
-    values = [@title, @genre, @artist_id]
-    db.prepare("save", sql)
-    db.exec_prepared("save", values)
-    db.close()
+      RETURNING id "
+    values = [@artist_id, @title, @genre]
+    result = SqlRunner.run(sql, values)
+    @id = result[0]["id"].to_i
   end
 
   def Album.all
-    db = PG.connect({dbname: 'music_collection', host: 'localhost'})
     sql = "SELECT * FROM albums"
-    db.prepare("all", sql)
-    result = db.exec_prepared("all")
-    db.close()
+    result = SqlRunner.run(sql)
     album = result.map { |album_hash| Album.new(album_hash) }
     return album
   end
 
   def artist
-    db = PG.connect({dbname: 'music_collection', host: 'localhost'})
     sql = "SELECT * FROM artists WHERE id = $1"
     values = [@artist_id]
-    db.prepare("artist", sql)
-    result = db.exec_prepared("artist", values)
-    db.close()
+    result = SqlRunner.run(sql, values)
     artist = result.map { |artist_hash| Artist.new(artist_hash) }
     return artist
+  end
+
+  def delete
+    sql = "DELETE FROM albums WHERE id = $1"
+    values = [@id]
+    SqlRunner.run(sql, values)
+  end
+
+  def update
+    sql = "
+      UPDATE albums
+      SET (
+        artist_id,
+        title,
+        genre
+      ) =
+      ($1, $2, $3)
+      WHERE id = $4"
+    values = [@artist_id, @title, @genre, @id]
+    SqlRunner.run(sql, values)
+  end
+
+  def Album.delete_all
+    sql = "DELETE FROM albums"
+    SqlRunner.run(sql)
   end
 
 end
