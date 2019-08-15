@@ -23,7 +23,7 @@ class Album
     result = SqlRunner.run(sql, values)
     return nil if result.first() == nil
     album_hash = result[0]
-    found_album = Artist.new(album_hash)
+    found_album = Album.new(album_hash)
     return found_album
   end
 

@@ -25,21 +25,19 @@ class Artist
     SqlRunner.run(sql)
   end
 
-  def Album.all
-    sql = "SELECT * FROM albums"
-    result = SqlRunner.run(sql)
-    album = result.map { |album_hash| Album.new(album_hash) }
-    return album
+  def Artist.find_by_id(id)
+    sql = "SELECT * FROM artists WHERE id = $1"
+    values = [id]
+    result = SqlRunner.run(sql, values)
+    return nil if result.first() == nil
+    artist_hash = result[0]
+    found_artist = Artist.new(artist_hash)
+    return found_artist
   end
 
   def save
     sql = "
-    INSERT INTO artists
-    (
-      name
-      )
-    VALUES
-    ($1)
+    INSERT INTO artists (name) VALUES ($1)
     RETURNING id "
     values = [@name]
     result = SqlRunner.run(sql, values)
